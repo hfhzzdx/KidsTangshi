@@ -2,9 +2,6 @@ package com.kids.tangshi.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -71,10 +68,9 @@ fun PoemCard(
             }
             if (onFavoriteClick != null) {
                 IconButton(onClick = onFavoriteClick) {
-                    Icon(
-                        imageVector = if (poem.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = if (poem.isFavorite) "取消收藏" else "收藏",
-                        tint = if (poem.isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
+                    Text(
+                        text = if (poem.isFavorite) "❤️" else "🤍",
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
             }

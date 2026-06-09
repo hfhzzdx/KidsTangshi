@@ -3,14 +3,6 @@ package com.kids.tangshi.ui.detail
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,23 +34,18 @@ fun DetailScreen(
                 title = { Text(text = poem.title) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        Text("<", style = MaterialTheme.typography.titleMedium)
                     }
                 },
                 actions = {
                     IconButton(onClick = onFavoriteClick) {
-                        Icon(
-                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = if (isFavorite) "取消收藏" else "收藏",
-                            tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onPrimary
+                        Text(
+                            text = if (isFavorite) "❤️" else "🤍",
+                            style = MaterialTheme.typography.titleMedium
                         )
                     }
                     IconButton(onClick = { /* 分享功能 */ }) {
-                        Icon(
-                            Icons.Default.Share,
-                            contentDescription = "分享",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+                        Text("↗", style = MaterialTheme.typography.titleMedium)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -92,22 +79,13 @@ fun DetailScreen(
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(
-                            imageVector = if (isSpeaking) Icons.Default.Close else Icons.Default.PlayArrow,
-                            contentDescription = null
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(if (isSpeaking) "停止朗读" else "📖 朗读")
+                        Text(if (isSpeaking) "⏹ 停止朗读" else "📖 朗读")
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Button(
                         onClick = onStudyComplete,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null
-                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("✅ 学完了")
                     }

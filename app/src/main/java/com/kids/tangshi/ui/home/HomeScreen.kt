@@ -3,9 +3,6 @@ package com.kids.tangshi.ui.home
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -75,10 +72,10 @@ fun HomeScreen(
                 },
                 actions = {
                     IconButton(onClick = { showSearch = !showSearch }) {
-                        Icon(Icons.Default.Search, contentDescription = "搜索")
+                    Text("🔍", style = MaterialTheme.typography.titleLarge)
                     }
                     IconButton(onClick = onSettingsClick) {
-                        Icon(Icons.Default.Settings, contentDescription = "设置")
+                    Text("⚙️", style = MaterialTheme.typography.titleLarge)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

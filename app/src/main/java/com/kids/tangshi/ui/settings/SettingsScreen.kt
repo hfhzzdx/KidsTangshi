@@ -29,7 +29,7 @@ fun SettingsScreen(
                 title = { Text("⚙️ 设置") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        Text("<", style = MaterialTheme.typography.titleMedium)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
