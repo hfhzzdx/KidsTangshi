@@ -4,13 +4,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,7 +19,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kids.tangshi.data.Poem
-import com.kids.tangshi.ui.theme.KidsTangshiTheme
 
 /**
  * 诗词详情页
@@ -43,7 +42,7 @@ fun DetailScreen(
                 title = { Text(text = poem.title) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
                     }
                 },
                 actions = {
@@ -81,7 +80,6 @@ fun DetailScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // TTS 朗读按钮
                     Button(
                         onClick = {
                             if (isSpeaking) {
@@ -95,16 +93,13 @@ fun DetailScreen(
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(
-                            imageVector = if (isSpeaking) Icons.Default.Stop else Icons.Default.PlayArrow,
+                            imageVector = if (isSpeaking) Icons.Default.Pause else Icons.Default.PlayArrow,
                             contentDescription = null
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(if (isSpeaking) "停止朗读" else "📖 朗读")
                     }
-
                     Spacer(modifier = Modifier.width(16.dp))
-
-                    // 学习完成按钮
                     Button(
                         onClick = onStudyComplete,
                         modifier = Modifier.weight(1f)
@@ -129,27 +124,21 @@ fun DetailScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // 诗词标题
             Text(
                 text = "📖 ${poem.title}",
                 style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurface
             )
-
-            // 作者和朝代
             Text(
                 text = "〔${poem.dynasty}〕${poem.author}",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
             )
-
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surfaceVariant
             )
-
-            // 诗词内容
             Text(
                 text = poem.content,
                 style = MaterialTheme.typography.bodyLarge,
@@ -157,51 +146,25 @@ fun DetailScreen(
                 lineHeight = 32.sp,
                 color = MaterialTheme.colorScheme.onSurface
             )
-
-            // 翻译
             if (poem.translation.isNotEmpty()) {
                 HorizontalDivider(
                     modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.surfaceVariant
                 )
-
                 Text(
                     text = "📝 译文",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.secondary
                 )
-
                 Text(
                     text = poem.translation,
                     style = MaterialTheme.typography.bodyMedium,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Start,
+                    textAlign = TextAlign.Start,
                     lineHeight = 28.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
             Spacer(modifier = Modifier.height(32.dp))
         }
-    }
-}
-
-/**
- * 预览
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
-@Composable
-fun DetailScreenPreview() {
-    KidsTangshiTheme {
-        DetailScreen(
-            poem = Poem(
-                id = "1",
-                title = "静夜思",
-                author = "李白",
-                dynasty = "唐",
-                content = "床前明月光，疑是地上霜。\n举头望明月，低头思故乡。",
-                translation = "明亮的月光洒在窗户纸上，好像地上泛起了一层白霜。我抬起头来，看那天窗外空中的明月，不由得低头沉思，想起远方的家乡。"
-            )
-        )
     }
 }

@@ -12,6 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kids.tangshi.data.Poem
+import com.kids.tangshi.ui.theme.CardBackground1
+import com.kids.tangshi.ui.theme.CardBackground2
+import com.kids.tangshi.ui.theme.CardBackground3
 
 /**
  * 诗词卡片组件
@@ -47,22 +50,17 @@ fun PoemCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // 诗词标题
                 Text(
                     text = poem.title,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                
-                // 作者和朝代
                 Text(
                     text = "〔${poem.dynasty}〕${poem.author}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
-                // 诗词内容预览
                 Text(
                     text = poem.content.take(30) + if (poem.content.length > 30) "..." else "",
                     style = MaterialTheme.typography.bodySmall,
@@ -71,8 +69,6 @@ fun PoemCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
-            // 收藏按钮
             if (onFavoriteClick != null) {
                 IconButton(onClick = onFavoriteClick) {
                     Icon(
@@ -111,28 +107,21 @@ fun DailyPoemCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 标签
             Text(
                 text = "📖 今日推荐",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
-            
-            // 诗词标题
             Text(
                 text = poem.title,
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
-            
-            // 作者
             Text(
                 text = "〔${poem.dynasty}〕${poem.author}",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
-            
-            // 诗词内容
             Text(
                 text = poem.content,
                 style = MaterialTheme.typography.bodyLarge,
@@ -169,18 +158,14 @@ fun StudyProgressCard(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
-            
             Spacer(modifier = Modifier.height(8.dp))
-            
             LinearProgressIndicator(
-                progress = completedCount.toFloat() / totalCount.toFloat(),
+                progress = { if (totalCount > 0) completedCount.toFloat() / totalCount.toFloat() else 0f },
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.secondary,
                 trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
-            
             Spacer(modifier = Modifier.height(4.dp))
-            
             Text(
                 text = "$completedCount / $totalCount",
                 style = MaterialTheme.typography.bodyMedium,

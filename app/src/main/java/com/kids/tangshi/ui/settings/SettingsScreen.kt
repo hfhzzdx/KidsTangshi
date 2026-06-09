@@ -5,16 +5,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Remove
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kids.tangshi.ui.theme.KidsTangshiTheme
 
 /**
  * 设置页
@@ -34,7 +33,7 @@ fun SettingsScreen(
                 title = { Text("⚙️ 设置") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -69,7 +68,7 @@ fun SettingsScreen(
                                 ttsHelper?.setSpeechRate(speechRate)
                             }
                         }) {
-                            Icon(Icons.Default.Remove, contentDescription = "减慢")
+                            Icon(Icons.AutoMirrored.Filled.Remove, contentDescription = "减慢")
                         }
                         Text("%.2fx".format(speechRate), style = MaterialTheme.typography.bodyMedium)
                         IconButton(onClick = {
@@ -131,16 +130,13 @@ fun SettingsScreen(
 
 @Composable
 fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
-    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
         Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.height(12.dp))
         content()
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
-@Composable
-fun SettingsScreenPreview() {
-    KidsTangshiTheme { SettingsScreen() }
 }
