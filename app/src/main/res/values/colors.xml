@@ -4,4 +4,5 @@
     <color name="secondary_blue">#64B5F6</color>
     <color name="tertiary_pink">#F48FB1</color>
     <color name="background_light">#FFFBF0</color>
+    <color name="ic_launcher_bg">#FF9800</color>
 </resources>
