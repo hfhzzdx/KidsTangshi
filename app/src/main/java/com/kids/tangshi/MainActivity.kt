@@ -1,7 +1,7 @@
 package com.kids.tangshi
 
-import android.os.Bundle
 import android.net.Uri
+import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,12 +18,12 @@ import com.kids.tangshi.ui.theme.KidsTangshiTheme
 
 class MainActivity : ComponentActivity() {
 
-    private var _importCallback: ((Uri) -> Unit)? = null
+    private var importCallback: ((Uri) -> Unit)? = null
 
     private val filePicker = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { _importCallback?.invoke(it) }
+        uri?.let { importCallback?.invoke(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,8 +35,8 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     KidsTangshiApp(
-                        onPickFile = { callback ->
-                            _importCallback = callback
+                        onRequestImport = {
+                            importCallback = it
                             filePicker.launch("application/json")
                         }
                     )
@@ -48,10 +48,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun KidsTangshiApp(
-    onPickFile: ((android.net.Uri) -> Unit)? = null
+    onRequestImport: (((Uri) -> Unit) -> Unit)? = null
 ) {
-    // 简单的回退式导航
-    var screen by remember { mutableStateOf("home") }  // "home", "detail", "settings"
+    var screen by remember { mutableStateOf("home") }
     var selectedPoem by remember { mutableStateOf<Poem?>(null) }
 
     when (screen) {
@@ -60,23 +59,17 @@ fun KidsTangshiApp(
                 selectedPoem = poem
                 screen = "detail"
             },
-            onSettingsClick = {
-                screen = "settings"
-            }
+            onSettingsClick = { screen = "settings" }
         )
         "detail" -> selectedPoem?.let { poem ->
             DetailScreen(
                 poem = poem,
-                onBackClick = {
-                    screen = "home"
-                }
+                onBackClick = { screen = "home" }
             )
         }
         "settings" -> SettingsScreen(
-            onBackClick = {
-                screen = "home"
-            },
-            onPickFile = onPickFile
+            onBackClick = { screen = "home" },
+            onRequestImport = onRequestImport
         )
     }
 }

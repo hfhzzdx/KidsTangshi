@@ -24,7 +24,7 @@ import java.io.FileOutputStream
 fun SettingsScreen(
     ttsHelper: com.kids.tangshi.util.TtsHelper? = null,
     onBackClick: () -> Unit = {},
-    onPickFile: ((Uri) -> Unit)? = null
+    onRequestImport: (((Uri) -> Unit) -> Unit)? = null
 ) {
     var speechRate by remember { mutableStateOf(1.0f) }
     var selectedTheme by remember { mutableStateOf("light") }
@@ -131,7 +131,7 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
-                        onPickFile?.invoke(importCallback)
+                        onRequestImport?.invoke(importCallback)
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
