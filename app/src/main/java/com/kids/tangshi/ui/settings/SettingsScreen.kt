@@ -112,17 +112,17 @@ fun SettingsScreen(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // TTS 诊断信息
                 val hasChinese = ttsHelper?.isChineseAvailable() ?: false
+                val langStatus = ttsHelper?.getLanguageStatus() ?: "未知"
                 Text(
-                    "中文支持: ${if (hasChinese) "✅ 可用" else "⚠️ 不可用（请安装中文语音引擎）"}",
+                    "中文支持: ${if (hasChinese) "✅ 可用" else "⚠️ 不可用 ($langStatus)"}",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (hasChinese) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 如果没有引擎，显示安装指引
-                if (engines.isEmpty()) {
+                // 没有中文支持时，显示引导卡片
+                if (!hasChinese) {
                     Card(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer
@@ -130,20 +130,20 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
-                            Text("⚠️ 未检测到 TTS 引擎，请安装中文语音引擎：",
+                            Text("⚠️ 未检测到中文 TTS，请尝试：",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text("1. 打开「设置 → 更多设置 → 辅助功能 → 无障碍 → 文字转语音(TTS)」",
+                            Text("1. 设置 → 小爱同学 → 语音设置 → 朗读引擎",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
-                            Text("2. 选择「Google 中文语音」或「科大讯飞语音引擎」",
+                            Text("2. 设置 → 声音和振动 → 朗读文字",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
-                            Text("3. 若无选项，请前往应用商店搜索「Google TTS」安装",
+                            Text("3. 设置 → 应用设置 → 应用管理 → 搜索\"TTS\"",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer
                             )
@@ -155,12 +155,19 @@ fun SettingsScreen(
                 OutlinedButton(
                     onClick = {
                         try {
-                            // 尝试打开文字转语音设置页
-                            val intent = android.content.Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                            context.startActivity(intent)
-                            Toast.makeText(context, "请找到『文字转语音(TTS)』选项", Toast.LENGTH_LONG).show()
+                            val intents = listOf(
+                                Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS),
+                                Intent(Settings.ACTION_SETTINGS)
+                            )
+                            for (intent in intents) {
+                                try {
+                                    context.startActivity(intent)
+                                    Toast.makeText(context, "请找到『文字转语音』选项", Toast.LENGTH_LONG).show()
+                                    break
+                                } catch (_: Exception) { }
+                            }
                         } catch (e: Exception) {
-                            Toast.makeText(context, "请手动打开：设置 → 辅助功能 → 文字转语音", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "请手动打开设置 → 辅助功能 → 文字转语音", Toast.LENGTH_LONG).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -170,8 +177,18 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedButton(
                     onClick = {
-                        ttsHelper?.speak("床前明月光，疑是地上霜。举头望明月，低头思故乡。")
-                        Toast.makeText(context, "正在朗读测试...", Toast.LENGTH_SHORT).show()
+                        if (ttsHelper?.isInitialized() != true) {
+                            Toast.makeText(context, "TTS 正在初始化，请稍候再试", Toast.LENGTH_SHORT).show()
+                            return@OutlinedButton
+                        }
+                        val result = ttsHelper?.speak("床前明月光，疑是地上霜。") ?: -99
+                        val msg = when (result) {
+                            0 -> "朗读请求已发送(0)"
+                            -1 -> "朗读失败(-1ERROR)"
+                            -2 -> "朗读失败(-2SERVER_ERROR)"
+                            else -> "朗读失败($result 未初始化)"
+                        }
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {

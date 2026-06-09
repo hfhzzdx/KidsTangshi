@@ -1,6 +1,8 @@
 package com.kids.tangshi.util
 
 import android.content.Context
+import android.media.AudioManager
+import android.os.Build
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
@@ -14,6 +16,7 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
     private var tts: TextToSpeech? = null
     private var isInitialized = false
     private var pendingText: String? = null
+    private var lastSpeakResult: Int = -99
 
     init {
         tts = TextToSpeech(context, this)
@@ -22,36 +25,40 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             tts?.let { engine ->
-                // 按优先级尝试中文语言设置
-                val langResult = engine.setLanguage(Locale.SIMPLIFIED_CHINESE)
-                Log.d(TAG, "setLanguage(SIMPLIFIED_CHINESE) = $langResult")
-                if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    engine.setLanguage(Locale("zh", "CN"))
-                }
+                // 尝试中文语言
+                engine.setLanguage(Locale.SIMPLIFIED_CHINESE)
                 engine.setSpeechRate(1.0f)
+                engine.setPitch(1.0f)
 
                 isInitialized = true
-                Log.d(TAG, "TTS initialized OK")
+                Log.d(TAG, "TTS initialized")
 
                 pendingText?.let {
-                    Log.d(TAG, "Speaking pending text")
                     speak(it)
                     pendingText = null
                 }
             }
         } else {
-            Log.e(TAG, "TTS init FAILED status=$status")
+            Log.e(TAG, "TTS init failed: $status")
         }
     }
 
-    fun speak(text: String) {
+    /**
+     * 朗读，返回 speak 结果码
+     * 0 = SUCCESS, -1 = ERROR, -2 = SERVER_ERROR
+     */
+    fun speak(text: String): Int {
+        lastSpeakResult = -99
         if (!isInitialized) {
             pendingText = text
-            return
+            return -99
         }
         tts?.stop()
-        val result = tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "poem_${System.currentTimeMillis()}")
-        Log.d(TAG, "speak() result=$result")
+
+        val utteranceId = "poem_${System.currentTimeMillis()}"
+        lastSpeakResult = tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId) ?: -99
+        Log.d(TAG, "speak() = $lastSpeakResult")
+        return lastSpeakResult
     }
 
     fun stop() {
@@ -64,10 +71,27 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
 
     fun isSpeaking(): Boolean = tts?.isSpeaking ?: false
 
+    fun isInitialized(): Boolean = isInitialized
+
+    fun getLastSpeakResult(): Int = lastSpeakResult
+
     fun isChineseAvailable(): Boolean {
         if (!isInitialized) return false
-        val result = tts?.setLanguage(Locale.SIMPLIFIED_CHINESE) ?: TextToSpeech.LANG_NOT_SUPPORTED
-        return result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED
+        val r = tts?.isLanguageAvailable(Locale.SIMPLIFIED_CHINESE) ?: -1
+        return r >= TextToSpeech.LANG_COUNTRY_AVAILABLE
+    }
+
+    fun getLanguageStatus(): String {
+        if (!isInitialized) return "未初始化"
+        val r = tts?.isLanguageAvailable(Locale.SIMPLIFIED_CHINESE) ?: -1
+        return when (r) {
+            TextToSpeech.LANG_AVAILABLE -> "可用"
+            TextToSpeech.LANG_COUNTRY_AVAILABLE -> "国家可用"
+            TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE -> "语言变体可用"
+            TextToSpeech.LANG_MISSING_DATA -> "缺少语言数据"
+            TextToSpeech.LANG_NOT_SUPPORTED -> "不支持"
+            else -> "未知($r)"
+        }
     }
 
     fun setOnUtteranceProgressListener(listener: UtteranceProgressListener) {
