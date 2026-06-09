@@ -8,7 +8,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
@@ -93,7 +93,7 @@ fun DetailScreen(
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(
-                            imageVector = if (isSpeaking) Icons.Default.Stop else Icons.Default.PlayArrow,
+                            imageVector = if (isSpeaking) Icons.Default.Close else Icons.Default.PlayArrow,
                             contentDescription = null
                         )
                         Spacer(modifier = Modifier.width(8.dp))

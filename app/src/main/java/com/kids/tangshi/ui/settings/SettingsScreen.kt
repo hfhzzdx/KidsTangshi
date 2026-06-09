@@ -4,10 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.IndeterminateCheckBox
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -68,7 +64,7 @@ fun SettingsScreen(
                                 ttsHelper?.setSpeechRate(speechRate)
                             }
                         }) {
-                            Icon(Icons.Default.IndeterminateCheckBox, contentDescription = "减慢")
+                            Text("-", style = MaterialTheme.typography.titleLarge)
                         }
                         Text("%.2fx".format(speechRate), style = MaterialTheme.typography.bodyMedium)
                         IconButton(onClick = {
@@ -77,7 +73,7 @@ fun SettingsScreen(
                                 ttsHelper?.setSpeechRate(speechRate)
                             }
                         }) {
-                            Icon(Icons.Default.Add, contentDescription = "加快")
+                            Text("+", style = MaterialTheme.typography.titleLarge)
                         }
                     }
                 }
