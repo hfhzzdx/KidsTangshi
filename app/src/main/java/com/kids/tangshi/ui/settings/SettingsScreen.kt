@@ -6,7 +6,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Remove
+import androidx.compose.material.icons.filled.IndeterminateCheckBox
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -68,7 +68,7 @@ fun SettingsScreen(
                                 ttsHelper?.setSpeechRate(speechRate)
                             }
                         }) {
-                            Icon(Icons.AutoMirrored.Filled.Remove, contentDescription = "减慢")
+                            Icon(Icons.Default.IndeterminateCheckBox, contentDescription = "减慢")
                         }
                         Text("%.2fx".format(speechRate), style = MaterialTheme.typography.bodyMedium)
                         IconButton(onClick = {
