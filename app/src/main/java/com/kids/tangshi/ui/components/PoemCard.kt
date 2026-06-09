@@ -14,7 +14,7 @@ import com.kids.tangshi.ui.theme.CardBackground2
 import com.kids.tangshi.ui.theme.CardBackground3
 
 /**
- * 诗词卡片组件
+ * 诗词卡片组件 - 列表项，紧凑显示
  */
 @Composable
 fun PoemCard(
@@ -34,46 +34,54 @@ fun PoemCard(
                 else -> CardBackground3
             }
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
             ) {
+                // 标题 + 作者
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = poem.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "〔${poem.dynasty}〕${poem.author}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                // 内容预览：最多 2 行
                 Text(
-                    text = poem.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "〔${poem.dynasty}〕${poem.author}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = poem.content.take(30) + if (poem.content.length > 30) "..." else "",
+                    text = poem.content.replace("\n", " ").take(50) +
+                        if (poem.content.length > 50) "…" else "",
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            if (onFavoriteClick != null) {
-                IconButton(onClick = onFavoriteClick) {
-                    Text(
-                        text = if (poem.isFavorite) "❤️" else "🤍",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-            }
+            // 点击提示
+            Text(
+                text = "▶",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
@@ -101,7 +109,7 @@ fun DailyPoemCard(
                 .fillMaxWidth()
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = "📖 今日推荐",
@@ -118,11 +126,20 @@ fun DailyPoemCard(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
+            // 预览截断
             Text(
-                text = poem.content,
+                text = poem.content.replace("\n", " ").take(80) +
+                    if (poem.content.length > 80) "…" else "",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = "点击查看全文 →",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
