@@ -16,10 +16,6 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
     private var pendingText: String? = null
     private var utteranceListener: UtteranceProgressListener? = null
 
-    fun setSpeechRate(rate: Float) {
-        textToSpeech?.setSpeechRate(rate)
-    }
-
     init {
         textToSpeech = TextToSpeech(context, this)
     }
@@ -27,22 +23,25 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             textToSpeech?.let { tts ->
-                val result = tts.setLanguage(Locale.SIMPLIFIED_CHINESE)
-                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Log.w(TAG, "Simplified Chinese not available, trying zh_CN")
-                    tts.setLanguage(Locale("zh", "CN"))
+                // 尝试多种中文语言设置
+                var langResult = tts.setLanguage(Locale.SIMPLIFIED_CHINESE)
+                if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    langResult = tts.setLanguage(Locale("zh", "CN"))
                 }
-                tts.setSpeechRate(1.0f)
-                // 确保音频输出
-                tts.setAudioAttributes(
-                    android.media.AudioAttributes.Builder()
-                        .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
-                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
-                        .build()
-                )
+                if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    langResult = tts.setLanguage(Locale.CHINESE)
+                }
+                Log.d(TAG, "Language set result: $langResult")
+
+                // 设置语速和音调
+                tts.setSpeechRate(0.9f)
+                tts.setPitch(1.0f)
+
                 isInitialized = true
                 Log.d(TAG, "TTS initialized successfully")
+
                 utteranceListener?.let { tts.setOnUtteranceProgressListener(it) }
+
                 pendingText?.let {
                     speak(it)
                     pendingText = null
@@ -54,16 +53,12 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
     }
 
     fun speak(text: String) {
-        Log.d(TAG, "speak() called, initialized=$isInitialized, text length=${text.length}")
+        Log.d(TAG, "speak() called, initialized=$isInitialized, text=${text.take(20)}...")
         if (isInitialized) {
             textToSpeech?.stop()
-            val result = textToSpeech?.speak(
-                text,
-                TextToSpeech.QUEUE_FLUSH,
-                null,
-                "poem_${System.currentTimeMillis()}"
-            )
-            Log.d(TAG, "speak() result=$result")
+            val utteranceId = "poem_${System.currentTimeMillis()}"
+            val result = textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+            Log.d(TAG, "speak() result=$result, utteranceId=$utteranceId")
         } else {
             Log.d(TAG, "TTS not ready, queuing text")
             pendingText = text
