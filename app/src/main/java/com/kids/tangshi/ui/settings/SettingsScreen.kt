@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import java.io.File
 import java.io.FileOutputStream
 
@@ -36,11 +35,9 @@ fun SettingsScreen(
         try {
             context.contentResolver.openInputStream(uri)?.use { input ->
                 val fileName = uri.lastPathSegment ?: "custom_poems.json"
-                // 读取并验证是合法 JSON 数组
                 val jsonText = input.bufferedReader().readText()
-                org.json.JSONArray(jsonText) // 验证格式
+                org.json.JSONArray(jsonText)
 
-                // 复制到 app 私有目录的 poems 文件夹
                 val poemsDir = File(context.filesDir, "poems")
                 if (!poemsDir.exists()) poemsDir.mkdirs()
                 val outFile = File(poemsDir, fileName)
@@ -56,11 +53,6 @@ fun SettingsScreen(
             importStatus = "❌ 导入失败: ${e.message}"
             Toast.makeText(context, "导入失败", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    // 在第一次组合时注册回调
-    LaunchedEffect(Unit) {
-        // 通过 onPickFile 传递回调给 Activity
     }
 
     Scaffold(
@@ -86,7 +78,7 @@ fun SettingsScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            // TTS 语速
+            // TTS 语速 + 诊断
             SettingsSection(title = "🔊 朗读设置") {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -116,6 +108,45 @@ fun SettingsScreen(
                             Text("+", style = MaterialTheme.typography.titleLarge)
                         }
                     }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // TTS 诊断信息
+                val engines = ttsHelper?.getAvailableEngines() ?: emptyList()
+                val hasChinese = ttsHelper?.isChineseAvailable() ?: false
+                Text(
+                    "可用引擎: ${engines.joinToString(", ").ifEmpty { "未知" }}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    "中文支持: ${if (hasChinese) "✅ 可用" else "⚠️ 可能不可用（请打开TTS设置）"}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (hasChinese) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = {
+                        try {
+                            val intent = android.content.Intent("android.speech.tts.engine.INSTALL_TTS_DATA")
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "无法打开TTS设置", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("🔧 打开 TTS 引擎设置")
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                OutlinedButton(
+                    onClick = {
+                        ttsHelper?.speak("床前明月光，疑是地上霜。举头望明月，低头思故乡。")
+                        Toast.makeText(context, "正在朗读测试...", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("🔊 测试朗读")
                 }
             }
 
