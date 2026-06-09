@@ -26,8 +26,7 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             tts?.let { engine ->
-                // 列出可用引擎
-                val engines = engine.availableEngines
+                val engines = engine.engines.map { it.name }
                 Log.d(TAG, "Available TTS engines: $engines")
 
                 // 尝试设置中文语言，按优先级尝试
@@ -128,7 +127,11 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
      * 获取可用引擎列表（供调试用）
      */
     fun getAvailableEngines(): List<String> {
-        return tts?.availableEngines ?: emptyList()
+        return try {
+            tts?.engines?.map { it.name } ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     /**
