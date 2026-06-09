@@ -35,6 +35,7 @@ fun HomeScreen(
 
     var tangPoems by remember { mutableStateOf(listOf<Poem>()) }
     var songPoems by remember { mutableStateOf(listOf<Poem>()) }
+    var allPoems by remember { mutableStateOf(listOf<Poem>()) }
     var dailyPoem by remember { mutableStateOf<Poem?>(null) }
     var studiedCount by remember { mutableStateOf(0) }
 
@@ -43,13 +44,14 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         tangPoems = repository.loadTangPoems()
         songPoems = repository.loadSongPoems()
+        allPoems = repository.loadAllPoems()
         dailyPoem = repository.getDailyPoem()
     }
 
     val currentPoems = when (selectedCategory) {
         PoemCategory.TANG -> tangPoems
         PoemCategory.SONG -> songPoems
-        PoemCategory.THREE_HUNDRED -> tangPoems + songPoems
+        PoemCategory.THREE_HUNDRED -> allPoems
     }
 
     val filteredPoems = if (searchQuery.isEmpty()) {

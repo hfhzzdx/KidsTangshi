@@ -5,6 +5,7 @@ import android.util.Log
 import org.json.JSONArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.IOException
 
 /**
@@ -38,11 +39,35 @@ class PoemRepository(private val context: Context) {
     }
 
     /**
+     * 加载导入的自定义诗词数据
+     */
+    suspend fun loadCustomPoems(): List<Poem> = withContext(Dispatchers.IO) {
+        val poemsDir = File(context.filesDir, "poems")
+        if (!poemsDir.exists()) return@withContext emptyList()
+        val allPoems = mutableListOf<Poem>()
+        poemsDir.listFiles { file -> file.extension == "json" }?.forEach { file ->
+            try {
+                val json = file.readText(Charsets.UTF_8)
+                allPoems.addAll(parsePoemJson(json))
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading custom file ${file.name}", e)
+            }
+        }
+        allPoems
+    }
+
+    /**
+     * 加载所有诗词（内置 + 导入）
+     */
+    suspend fun loadAllPoems(): List<Poem> = withContext(Dispatchers.IO) {
+        loadTangPoems() + loadSongPoems() + loadCustomPoems()
+    }
+
+    /**
      * 搜索诗词
      */
     suspend fun searchPoems(keyword: String): List<Poem> = withContext(Dispatchers.IO) {
-        val allPoems = loadTangPoems() + loadSongPoems()
-        allPoems.filter { poem ->
+        loadAllPoems().filter { poem ->
             poem.title.contains(keyword, ignoreCase = true) ||
             poem.author.contains(keyword, ignoreCase = true) ||
             poem.content.contains(keyword, ignoreCase = true)

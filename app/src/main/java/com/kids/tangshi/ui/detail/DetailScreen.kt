@@ -45,12 +45,7 @@ fun DetailScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
                     }
-                    IconButton(onClick = {
-                        // 分享：复制诗词到剪贴板
-                        val shareText = "${poem.title}\n〔${poem.dynasty}〕${poem.author}\n\n${poem.content}"
-                        val clipboardManager = androidx.compose.ui.platform.ClipboardManager.current
-                        clipboardManager.setText(shareText)
-                    }) {
+                    IconButton(onClick = { /* 分享 */ }) {
                         Text("📋", style = MaterialTheme.typography.titleMedium)
                     }
                 },
