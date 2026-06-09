@@ -1,5 +1,6 @@
 package com.kids.tangshi.ui.settings
 
+import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
