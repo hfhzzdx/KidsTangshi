@@ -2,6 +2,7 @@ package com.kids.tangshi
 
 import android.net.Uri
 import android.os.Bundle
+import android.speech.tts.UtteranceProgressListener
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,6 +13,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.kids.tangshi.data.FavoriteManager
 import com.kids.tangshi.data.Poem
 import com.kids.tangshi.ui.detail.DetailScreen
@@ -24,6 +28,7 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
 
     private var importCallback: ((Uri) -> Unit)? = null
+    private var ttsHelper: TtsHelper? = null
 
     private val filePicker = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -33,6 +38,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ttsHelper = TtsHelper(this)
         setContent {
             KidsTangshiTheme {
                 Surface(
@@ -40,6 +46,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     KidsTangshiApp(
+                        ttsHelper = ttsHelper,
                         onRequestImport = {
                             importCallback = it
                             filePicker.launch("application/json")
@@ -49,21 +56,40 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ttsHelper?.shutdown()
+    }
 }
 
 @Composable
 fun KidsTangshiApp(
+    ttsHelper: TtsHelper? = null,
     onRequestImport: (((Uri) -> Unit) -> Unit)? = null
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val ttsHelper = remember { TtsHelper(context) }
     val favoriteManager = remember { FavoriteManager(context) }
 
     var screen by remember { mutableStateOf("home") }
     var selectedPoem by remember { mutableStateOf<Poem?>(null) }
     var isFavorite by remember { mutableStateOf(false) }
+    var isSpeaking by remember { mutableStateOf(false) }
     var studiedIds by remember { mutableStateOf(setOf<String>()) }
+
+    // 监听 TTS 朗读完成
+    LaunchedEffect(ttsHelper) {
+        ttsHelper?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            override fun onStart(utteranceId: String?) {}
+            override fun onDone(utteranceId: String?) {
+                isSpeaking = false
+            }
+            override fun onError(utteranceId: String?) {
+                isSpeaking = false
+            }
+        })
+    }
 
     // 当选中诗词变化时，刷新收藏状态
     LaunchedEffect(selectedPoem?.id) {
@@ -84,6 +110,8 @@ fun KidsTangshiApp(
             DetailScreen(
                 poem = poem,
                 ttsHelper = ttsHelper,
+                isSpeaking = isSpeaking,
+                onIsSpeakingChanged = { isSpeaking = it },
                 isFavorite = isFavorite,
                 onFavoriteClick = {
                     scope.launch {
@@ -98,7 +126,12 @@ fun KidsTangshiApp(
                         }
                     }
                 },
-                onBackClick = { screen = "home" },
+                onBackClick = {
+                    // 返回时停止 TTS
+                    ttsHelper?.stop()
+                    isSpeaking = false
+                    screen = "home"
+                },
                 onStudyComplete = {
                     if (poem.id !in studiedIds) {
                         studiedIds = studiedIds + poem.id

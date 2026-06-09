@@ -10,107 +10,84 @@ import java.util.Locale
  * TTS 帮助类
  */
 class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
-    
+
     private var textToSpeech: TextToSpeech? = null
     private var isInitialized = false
     private var pendingText: String? = null
-    private var speechRate: Float = 1.0f
-    
+    private var utteranceListener: UtteranceProgressListener? = null
+
+    fun setSpeechRate(rate: Float) {
+        textToSpeech?.setSpeechRate(rate)
+    }
+
     init {
         textToSpeech = TextToSpeech(context, this)
     }
-    
+
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             textToSpeech?.let { tts ->
-                // 设置中文语言
-                val result = tts.setLanguage(Locale.CHINESE)
+                val result = tts.setLanguage(Locale.SIMPLIFIED_CHINESE)
                 if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Log.e(TAG, "Chinese language is not supported")
-                    // 尝试使用简体中文
-                    tts.setLanguage(Locale.SIMPLIFIED_CHINESE)
+                    Log.w(TAG, "Simplified Chinese not available, trying zh_CN")
+                    tts.setLanguage(Locale("zh", "CN"))
                 }
-                
-                // 设置语速
-                tts.setSpeechRate(speechRate)
-                
+                tts.setSpeechRate(1.0f)
+                // 确保音频输出
+                tts.setAudioAttributes(
+                    android.media.AudioAttributes.Builder()
+                        .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build()
+                )
                 isInitialized = true
                 Log.d(TAG, "TTS initialized successfully")
-                
-                // 如果有待朗读的文本，立即朗读
+                utteranceListener?.let { tts.setOnUtteranceProgressListener(it) }
                 pendingText?.let {
                     speak(it)
                     pendingText = null
                 }
             }
         } else {
-            Log.e(TAG, "TTS initialization failed")
+            Log.e(TAG, "TTS initialization failed: $status")
         }
     }
-    
-    /**
-     * 朗读文本
-     */
+
     fun speak(text: String) {
+        Log.d(TAG, "speak() called, initialized=$isInitialized, text length=${text.length}")
         if (isInitialized) {
-            // 停止当前朗读
             textToSpeech?.stop()
-            
-            // 开始新的朗读
-            textToSpeech?.speak(
+            val result = textToSpeech?.speak(
                 text,
                 TextToSpeech.QUEUE_FLUSH,
                 null,
-                "TTS_${System.currentTimeMillis()}"
+                "poem_${System.currentTimeMillis()}"
             )
+            Log.d(TAG, "speak() result=$result")
         } else {
-            // TTS 未初始化，保存文本等待初始化后朗读
+            Log.d(TAG, "TTS not ready, queuing text")
             pendingText = text
         }
     }
-    
-    /**
-     * 停止朗读
-     */
+
     fun stop() {
         textToSpeech?.stop()
     }
-    
-    /**
-     * 设置语速
-     */
-    fun setSpeechRate(rate: Float) {
-        speechRate = rate
-        textToSpeech?.setSpeechRate(rate)
-    }
-    
-    /**
-     * 获取当前语速
-     */
-    fun getSpeechRate(): Float = speechRate
-    
-    /**
-     * 检查是否正在朗读
-     */
+
     fun isSpeaking(): Boolean = textToSpeech?.isSpeaking ?: false
-    
-    /**
-     * 释放资源
-     */
+
+    fun setOnUtteranceProgressListener(listener: UtteranceProgressListener) {
+        utteranceListener = listener
+        textToSpeech?.setOnUtteranceProgressListener(listener)
+    }
+
     fun shutdown() {
         textToSpeech?.stop()
         textToSpeech?.shutdown()
         textToSpeech = null
         isInitialized = false
     }
-    
-    /**
-     * 设置朗读进度监听器
-     */
-    fun setOnUtteranceProgressListener(listener: UtteranceProgressListener) {
-        textToSpeech?.setOnUtteranceProgressListener(listener)
-    }
-    
+
     companion object {
         private const val TAG = "TtsHelper"
     }

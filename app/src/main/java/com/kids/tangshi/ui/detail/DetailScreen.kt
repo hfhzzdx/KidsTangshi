@@ -20,12 +20,13 @@ import com.kids.tangshi.data.Poem
 fun DetailScreen(
     poem: Poem,
     ttsHelper: com.kids.tangshi.util.TtsHelper? = null,
+    isSpeaking: Boolean = false,
+    onIsSpeakingChanged: (Boolean) -> Unit = {},
     isFavorite: Boolean = false,
     onFavoriteClick: () -> Unit = {},
     onBackClick: () -> Unit = {},
     onStudyComplete: () -> Unit = {}
 ) {
-    var isSpeaking by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -34,7 +35,7 @@ fun DetailScreen(
                 title = { Text(text = poem.title) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Text("<", style = MaterialTheme.typography.titleMedium)
+                        Text("←", style = MaterialTheme.typography.titleMedium)
                     }
                 },
                 actions = {
@@ -44,8 +45,13 @@ fun DetailScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
                     }
-                    IconButton(onClick = { /* 分享功能 */ }) {
-                        Text("↗", style = MaterialTheme.typography.titleMedium)
+                    IconButton(onClick = {
+                        // 分享：复制诗词到剪贴板
+                        val shareText = "${poem.title}\n〔${poem.dynasty}〕${poem.author}\n\n${poem.content}"
+                        val clipboardManager = androidx.compose.ui.platform.ClipboardManager.current
+                        clipboardManager.setText(shareText)
+                    }) {
+                        Text("📋", style = MaterialTheme.typography.titleMedium)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -71,10 +77,10 @@ fun DetailScreen(
                         onClick = {
                             if (isSpeaking) {
                                 ttsHelper?.stop()
-                                isSpeaking = false
+                                onIsSpeakingChanged(false)
                             } else {
                                 ttsHelper?.speak(poem.content)
-                                isSpeaking = true
+                                onIsSpeakingChanged(true)
                             }
                         },
                         modifier = Modifier.weight(1f)
@@ -86,7 +92,6 @@ fun DetailScreen(
                         onClick = onStudyComplete,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Spacer(modifier = Modifier.width(8.dp))
                         Text("✅ 学完了")
                     }
                 }
