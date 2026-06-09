@@ -1,6 +1,7 @@
 package com.kids.tangshi.ui.settings
 
 import android.net.Uri
+import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -112,31 +113,59 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // TTS 诊断信息
-                val engines = ttsHelper?.getAvailableEngines() ?: emptyList()
                 val hasChinese = ttsHelper?.isChineseAvailable() ?: false
                 Text(
-                    "可用引擎: ${engines.joinToString(", ").ifEmpty { "未知" }}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    "中文支持: ${if (hasChinese) "✅ 可用" else "⚠️ 可能不可用（请打开TTS设置）"}",
+                    "中文支持: ${if (hasChinese) "✅ 可用" else "⚠️ 不可用（请安装中文语音引擎）"}",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (hasChinese) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // 如果没有引擎，显示安装指引
+                if (engines.isEmpty()) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text("⚠️ 未检测到 TTS 引擎，请安装中文语音引擎：",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("1. 打开「设置 → 更多设置 → 辅助功能 → 无障碍 → 文字转语音(TTS)」",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text("2. 选择「Google 中文语音」或「科大讯飞语音引擎」",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text("3. 若无选项，请前往应用商店搜索「Google TTS」安装",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
                 OutlinedButton(
                     onClick = {
                         try {
-                            val intent = android.content.Intent("android.speech.tts.engine.INSTALL_TTS_DATA")
+                            // 尝试打开文字转语音设置页
+                            val intent = android.content.Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                             context.startActivity(intent)
+                            Toast.makeText(context, "请找到『文字转语音(TTS)』选项", Toast.LENGTH_LONG).show()
                         } catch (e: Exception) {
-                            Toast.makeText(context, "无法打开TTS设置", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "请手动打开：设置 → 辅助功能 → 文字转语音", Toast.LENGTH_LONG).show()
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("🔧 打开 TTS 引擎设置")
+                    Text("🔧 打开文字转语音设置")
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedButton(
