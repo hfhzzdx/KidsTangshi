@@ -69,6 +69,10 @@ class TtsHelper(private val context: Context) : TextToSpeech.OnInitListener {
         textToSpeech?.stop()
     }
 
+    fun setSpeechRate(rate: Float) {
+        textToSpeech?.setSpeechRate(rate)
+    }
+
     fun isSpeaking(): Boolean = textToSpeech?.isSpeaking ?: false
 
     fun setOnUtteranceProgressListener(listener: UtteranceProgressListener) {
